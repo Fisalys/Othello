@@ -92,7 +92,7 @@ public class Main extends Application {
         newP.setOnAction(e->{
             primaryStage.close();
         });
-        //primaryStage.initStyle(StageStyle.UNDECORATED);
+        primaryStage.initStyle(StageStyle.UNDECORATED);
         primaryStage.setMaximized(true);
         primaryStage.setScene(s2);
         primaryStage.show();
