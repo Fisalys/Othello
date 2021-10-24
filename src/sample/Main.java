@@ -3,20 +3,25 @@ package sample;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
 
 import java.awt.*;
 import java.io.FileInputStream;
@@ -101,16 +106,51 @@ public class Main extends Application {
             bordHaut.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
             root.setTop(bordHaut);
 
+            // On crée le bord droite pour la liste des coups
+            VBox bordDroite = new VBox();
+
+            HBox bordDroite2 = new HBox();
+            bordDroite.getChildren().add(bordDroite2);
+            VBox coups = new VBox();
+            Group t1 = new Group();
+            t1.setTranslateY(120);
+            t1.setTranslateX(-100);
+            ScrollPane scrollPane = new ScrollPane();
+
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scrollPane.setMaxHeight(692);
+            scrollPane.setMinWidth(192);
+            scrollPane.setContent(o.getCoups());
+            scrollPane.setTranslateX(4);
+            scrollPane.setTranslateY(4);
+            scrollPane.setStyle("-fx-background: d6a2a2;" +
+                    "-fx-background-color: d6a2a2;");
+
+            coups.setAlignment(Pos.CENTER);
+
+            Rectangle r2 = new Rectangle(200, 700, Color.web("#d6a2a2"));
+            r2.setStyle("-fx-fill: #d6a2a2; -fx-stroke: black; -fx-stroke-width: 4;");
+
+            t1.getChildren().add(r2);
+            t1.getChildren().add(scrollPane);
+
+            bordDroite2.getChildren().add(t1);
+            bordDroite2.getChildren().add(new Rectangle(200, 100, Color.web("#d6a2a2")));
+
+            root.setRight(bordDroite);
+
+
             //On ajoute l'icone
             FileInputStream input = new FileInputStream("ressouces/icon.png");
             Image image = new Image(input);
             ImageView icon = new ImageView(image);
             Label iconView = new Label("");
             iconView.setGraphic(icon);
-            iconView.setPadding(new Insets(0, 0, 0, primaryStage.getWidth()*0.94));
+            iconView.setPadding(new Insets(0, 0, 0, 1700));
             bordHaut.getItems().add(iconView);
             primaryStage.initStyle(StageStyle.UNDECORATED);
             primaryStage.setMaximized(true);
+
 
             primaryStage.setScene(s2);
             System.out.println(primaryStage.getScene());
