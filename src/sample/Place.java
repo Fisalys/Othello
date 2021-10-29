@@ -9,6 +9,7 @@ public class Place extends Rectangle
     private int posTabY;
     private Pion pion;
     private Color color;
+    private int poids;
 
     public Place()
     {
@@ -61,5 +62,13 @@ public class Place extends Rectangle
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public int getPoids() {
+        return poids;
+    }
+
+    public void setPoids(int poids) {
+        this.poids = poids;
     }
 }

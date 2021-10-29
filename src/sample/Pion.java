@@ -9,7 +9,7 @@ public class Pion extends Circle
 
     public Pion(int x, int y,Color color)
     {
-        super(45, color);
+        super(35, color);
         this.setCenterX(x);
         this.setCenterY(y);
         this.color = color;

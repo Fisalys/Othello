@@ -12,6 +12,14 @@ public class Coup {
     private int Y;
     private Color joueur;
     private Label label;
+    private int poids;
+
+    public Coup()
+    {
+        this.X = 0;
+        this.Y = 0;
+        this.joueur = null;
+    }
 
     public Coup(int x, int y, Color joueur)
     {
@@ -52,5 +60,13 @@ public class Coup {
 
     public void setLabel(Label label) {
         this.label = label;
+    }
+
+    public int getPoids() {
+        return poids;
+    }
+
+    public void setPoids(int poids) {
+        this.poids = poids;
     }
 }

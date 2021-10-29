@@ -1,5 +1,11 @@
 package sample;
 
+import com.mxgraph.layout.mxCircleLayout;
+import com.mxgraph.layout.mxCompactTreeLayout;
+import com.mxgraph.layout.mxIGraphLayout;
+import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxICell;
+import com.mxgraph.util.mxCellRenderer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
@@ -17,14 +23,25 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.scene.control.CheckBox;
+import org.jgrapht.ext.JGraphXAdapter;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Scanner;
 
 
 public class Main extends Application {
@@ -61,32 +78,112 @@ public class Main extends Application {
             FileInputStream temp = new FileInputStream("ressouces/home.png");
             Image temp2 = new Image(temp);
             ImageView home = new ImageView(temp2);
+            FileInputStream temp3 = new FileInputStream("ressouces/homeClicked.png");
+            Image temp4 = new Image(temp3);
+            ImageView homeClicked = new ImageView(temp4);
+
             Label homeView = new Label("");
             homeView.setGraphic(home);
             homeView.setTranslateX(7);
-            homeView.setTranslateY(100);
+            homeView.setTranslateY(50);
             barreGauche.getChildren().add(homeView);
 
+            Group menu = new Group();
 
-            Accordion menu = new Accordion();
+            Rectangle background = new Rectangle(300, 1022, Color.web("ad4d4d"));
+
+            menu.getChildren().add(background);
             menu.setVisible(false);
-            menu.setTranslateY(100);
-            menu.setMinWidth(300);
 
+            
+            homeView.setOnMouseClicked(e->{
+                    menu.setVisible(!menu.isVisible());
+                    homeView.setGraphic((homeView.getGraphic() == home)?homeClicked:home);
 
-            homeView.setOnMouseEntered(e->{
-
-                    menu.setVisible(!(menu.isVisible()));
             });
+
+
+            VBox test= new VBox();
+            test.setTranslateY(60);
+
             TitledPane one = new TitledPane();
+            one.setExpanded(false);
+            one.setText("JOUER");
 
-            one.setText("Test");
+            one.setMinWidth(300);
+            one.setFont(Othello.fontCollege);
+            one.setStyle("-fx-background-color: #ad4d4d");
+            VBox contentPartie = new VBox();
+            contentPartie.setMinWidth(300);
 
-            menu.getPanes().add(one);
+            Button newPartie= new Button("Nouvelle Partie");
+            newPartie.setFont(Othello.fontCollege);
+            //newPartie.setMinWidth(300);
+            CheckBox ia= new CheckBox("Jouer contre l'IA");
+            ia.setFont(Othello.fontCollege);
+            //ia.setMinWidth(300);
+            contentPartie.getChildren().addAll(newPartie, ia)   ;
+            one.setContent(contentPartie);
 
+            TitledPane two = new TitledPane();
+            two.setText("SAUVEGARDER");
+            two.setFont(Othello.fontCollege);
+            two.setExpanded(false);
+            Button b2= new Button("Sauvegarder la partie");
+            b2.setFont(Othello.fontCollege);
+            b2.setMinWidth(300);
+
+            two.setContent(b2);
+            test.getChildren().addAll(one, two);
+            menu.getChildren().add(test);
             bordGroup.getChildren().add(menu);
+
             //On instancie le jeu et on le place au centre
-            Othello o = new Othello(s2);
+            Othello o = new Othello();
+            newPartie.setOnAction(e->{
+                o.resetPartie();
+            });
+            ia.setOnAction(e->{
+                    if(ia.isSelected())
+                    {
+                            o.setIa(Color.WHITE);
+                    }else
+                    {
+                            o.setIa(null);
+                    }
+            });
+
+            Button graphe = new Button("Graphe");
+            graphe.setFont(Othello.fontCollege);
+            graphe.setTranslateY(400);
+            barreGauche.getChildren().add(graphe);
+            graphe.setOnAction(e ->
+            {
+                    DefaultDirectedGraph<Coup, DefaultEdge> graph = o.creerGraphePositionel();
+                    JGraphXAdapter<Coup, DefaultEdge> graphAdapter = new JGraphXAdapter<Coup, DefaultEdge>(graph);
+                    for(Map.Entry<mxICell, DefaultEdge> m: graphAdapter.getCellToEdgeMap().entrySet())
+                    {
+                            m.getKey().setValue("");
+                    }
+                    for(Map.Entry<mxICell, Coup> m:graphAdapter.getCellToVertexMap().entrySet())
+                    {
+                            m.getKey().setValue(m.getValue().getPoids());
+                    }
+                    mxIGraphLayout layout = new mxCompactTreeLayout(graphAdapter);
+                    layout.execute(graphAdapter.getDefaultParent());
+
+
+                    BufferedImage image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, java.awt.Color.WHITE, true, null);
+                    File imgFile = new File("ressouces/graph.png");
+                    try {
+                            ImageIO.write(image, "PNG", imgFile);
+                    } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                    }
+
+
+            });
+
             root.setCenter(o.getAff());
             //On place le hbox du menu a gauche
             root.setLeft(bordGroup);
@@ -146,7 +243,7 @@ public class Main extends Application {
             ImageView icon = new ImageView(image);
             Label iconView = new Label("");
             iconView.setGraphic(icon);
-            iconView.setPadding(new Insets(0, 0, 0, 1700));
+            iconView.setPadding(new Insets(0, 0, 0, 1825));
             bordHaut.getItems().add(iconView);
             primaryStage.initStyle(StageStyle.UNDECORATED);
             primaryStage.setMaximized(true);
@@ -155,6 +252,10 @@ public class Main extends Application {
             primaryStage.setScene(s2);
             System.out.println(primaryStage.getScene());
             primaryStage.show();
+
+
+
+
     }
 
 
