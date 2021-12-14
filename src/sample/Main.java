@@ -1,5 +1,6 @@
 package sample;
 
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.layout.mxCircleLayout;
 import com.mxgraph.layout.mxCompactTreeLayout;
 import com.mxgraph.layout.mxIGraphLayout;
@@ -26,6 +27,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.scene.control.CheckBox;
+import org.jgrapht.Graphs;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -38,16 +40,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.*;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Scanner;
 
 
 public class Main extends Application {
-
+/*
     @Override
     public void start(Stage primaryStage) throws Exception{
+
+
             primaryStage.setTitle("Othello");
             BorderPane root = new BorderPane();
             root.setStyle("-fx-background-color: #d6a2a2");
@@ -75,10 +77,10 @@ public class Main extends Application {
             bordGroup.getChildren().addAll(barreGauche);
 
             //Ajout des images pour les menu
-            FileInputStream temp = new FileInputStream("ressouces/home.png");
+            FileInputStream temp = new FileInputStream("src/sample/ressource/home.png");
             Image temp2 = new Image(temp);
             ImageView home = new ImageView(temp2);
-            FileInputStream temp3 = new FileInputStream("ressouces/homeClicked.png");
+            FileInputStream temp3 = new FileInputStream("src/sample/ressource/homeClicked.png");
             Image temp4 = new Image(temp3);
             ImageView homeClicked = new ImageView(temp4);
 
@@ -159,28 +161,11 @@ public class Main extends Application {
             barreGauche.getChildren().add(graphe);
             graphe.setOnAction(e ->
             {
-                    DefaultDirectedGraph<Coup, DefaultEdge> graph = o.creerGraphePositionel();
-                    JGraphXAdapter<Coup, DefaultEdge> graphAdapter = new JGraphXAdapter<Coup, DefaultEdge>(graph);
-                    for(Map.Entry<mxICell, DefaultEdge> m: graphAdapter.getCellToEdgeMap().entrySet())
-                    {
-                            m.getKey().setValue("");
-                    }
-                    for(Map.Entry<mxICell, Coup> m:graphAdapter.getCellToVertexMap().entrySet())
-                    {
-                            m.getKey().setValue(m.getValue().getPoids());
-                    }
-                    mxIGraphLayout layout = new mxCompactTreeLayout(graphAdapter);
-                    layout.execute(graphAdapter.getDefaultParent());
 
-
-                    BufferedImage image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, java.awt.Color.WHITE, true, null);
-                    File imgFile = new File("ressouces/graph.png");
-                    try {
-                            ImageIO.write(image, "PNG", imgFile);
-                    } catch (IOException ioException) {
-                            ioException.printStackTrace();
-                    }
-
+                    Coup coup = new Coup();
+                    int p = 6;
+                    o.creerGraphe(1, p, o, coup, 2);
+                    System.out.println(coup.getLabel());
 
             });
 
@@ -238,7 +223,7 @@ public class Main extends Application {
 
 
             //On ajoute l'icone
-            FileInputStream input = new FileInputStream("ressouces/icon.png");
+            FileInputStream input = new FileInputStream("src/sample/ressource/icon.png");
             Image image = new Image(input);
             ImageView icon = new ImageView(image);
             Label iconView = new Label("");
@@ -253,8 +238,92 @@ public class Main extends Application {
             System.out.println(primaryStage.getScene());
             primaryStage.show();
 
+    }
+
+ */
 
 
+
+
+
+
+    public int jouer2IA(int choixStrategie)// IA Aleatoire joue les blancs et l'autre joue les noirs en fonction d'un strategie chosie -> 1 pour absolu, 2 pour positionnel, 3 pour mobilité
+    {
+            Othello o = new Othello();
+            int finie = 0;
+            int tour = 0;
+            while(finie != 2)
+            {
+                 finie = 0;
+                 o.jouerIA(o.getJoueur());
+                 o.setJoueur((o.getJoueur() == Color.WHITE)? Color.BLACK: Color.WHITE);
+                 int nb = o.choixPossible(o.getJoueur());
+                 if(nb <= 0)
+                 {
+                         finie=1;
+                         o.setJoueur((o.getJoueur() == Color.WHITE)? Color.BLACK: Color.WHITE);
+                         nb = o.choixPossible(o.getJoueur());
+                         if(nb <= 0)
+                                 finie=2;
+                 }else
+                 {
+                         while(o.getJoueur() == Color.WHITE)
+                         {
+                                 Random r = new Random();
+                                 int choix = r.nextInt(nb);
+                                 o.placerCoups(o.getJoueur(), o.getCaseJouables().get(choix).getPosTabY(), o.getCaseJouables().get(choix).getPosTabX(), o.getAff());
+                                 o.setJoueur((o.getJoueur() == Color.WHITE)? Color.BLACK: Color.WHITE);
+                                 nb = o.choixPossible(o.getJoueur());
+                                 if(nb <= 0)
+                                 {
+                                         finie=1;
+                                         o.setJoueur((o.getJoueur() == Color.WHITE)? Color.BLACK: Color.WHITE);
+                                         nb = o.choixPossible(o.getJoueur());
+                                         if(nb <= 0) {
+                                             finie = 2;
+                                             o.setJoueur((o.getJoueur() == Color.WHITE)? Color.BLACK: Color.WHITE);
+                                         }
+                                 }
+                         }
+                 }
+                 tour++;
+
+            }
+            Color gagnant = o.quiGagne();
+            if(gagnant == Color.WHITE)
+                    return 1;
+            else if (gagnant == Color.BLACK)
+                    return -1;
+            else
+                    return 0;
+    }
+
+    public void jouerPlusieursPartie(int choixStrategie)//1 pour absolu, 2 pour positionnel, 3 pour mobilité
+    {
+        long debut = System.currentTimeMillis();
+        int victoireBlanche = 0;
+        int victoireNoire = 0;
+        int egalite = 0;
+        int temp;
+        for(int i =1; i <= 1000; i++)
+        {
+            temp = jouer2IA(choixStrategie);
+            if(temp == 1)
+                victoireBlanche++;
+            else if(temp == -1)
+                victoireNoire++;
+            else
+                egalite++;
+            System.out.println("Partie n°"+ i + " terminée");
+
+            if(i % 100 == 0)
+            {
+                System.out.println("Victoire Noire : " + victoireNoire + "\n" + "Victoire Blanche : " + victoireBlanche + "\n" + "Egalité : " + egalite);
+                long fin = System.currentTimeMillis();
+                double second = (fin-debut) /1000F;
+                System.out.println("Temps d'éxécution : "+second);
+            }
+        }
 
     }
 
@@ -262,4 +331,22 @@ public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
+
+    @Override
+    public void start(Stage stage) throws Exception {
+            jouerPlusieursPartie(1);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 }

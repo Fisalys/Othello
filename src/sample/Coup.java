@@ -13,6 +13,7 @@ public class Coup {
     private Color joueur;
     private Label label;
     private int poids;
+    private int nbPieces;
 
     public Coup()
     {
@@ -26,8 +27,8 @@ public class Coup {
         this.X = x;
         this.Y = y;
         this.joueur = joueur;
-        this.label = new Label(((joueur == Color.WHITE)?"BLANC":"NOIR  ") + " X: " + (X+1) + " Y: " + (Y+1));
-        this.label.setFont(Othello.fontCollege);
+        this.label = new Label(((joueur == Color.WHITE)?"BLANC":"NOIR  ") + " X: " + (X+1) + " Y: " + (Y+1) + " Poids : " + poids);
+
     }
 
     public int getX() {
@@ -68,5 +69,15 @@ public class Coup {
 
     public void setPoids(int poids) {
         this.poids = poids;
+        this.label = new Label(((joueur == Color.WHITE)?"BLANC":"NOIR  ") + " X: " + (X+1) + " Y: " + (Y+1) + " Poids : " + poids);//mettre à jour le label
+        this.label.setFont(Othello.fontCollege);
+    }
+
+    public int getNbPieces() {
+        return nbPieces;
+    }
+
+    public void setNbPieces(int nbPieces) {
+        this.nbPieces = nbPieces;
     }
 }

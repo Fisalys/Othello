@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
@@ -32,9 +33,9 @@ public class Othello
     private static Color CRIMSON2 = Color.color(1f, 0.15f, 0.30f);
     private Group aff;
     private Color ia; // Est ce que l'on joue avec l'ia -> null pour indiquer que l'ia n'est pas la
-    private List<Coup> coupJoue;
+    private LinkedList<Coup> coupJoue;
     private VBox coups;
-    public static Font fontCollege = Font.loadFont("file:ressouces/college.ttf", 20);
+    public static Font fontCollege = Font.loadFont("file:src/sample/ressource/college.ttf", 20);
 
     public Othello()
     {
@@ -49,6 +50,16 @@ public class Othello
         choixPossible(Color.BLACK);
         draw(aff);
     }
+    public Othello(String s)
+    {
+        aff = new Group();
+        ia = null;
+        plateau = new ArrayList<>();
+        caseJouables = new ArrayList<>();
+        joueur = Color.BLACK;
+        coupJoue = new LinkedList<>();
+        coups= new VBox();
+    }
 
     public void creerPlateau()
     {
@@ -58,7 +69,7 @@ public class Othello
         Color c;
         Scanner lecteur = null;
         try {
-            FileInputStream f = new FileInputStream("ressouces/Poids.txt");
+            FileInputStream f = new FileInputStream("src/sample/ressource/Poids.txt");
             lecteur = new Scanner(f);
         }catch (IOException e)
         {
@@ -88,12 +99,13 @@ public class Othello
                     public void handle(MouseEvent mouseEvent) {
                         if(p.getFill() == CRIMSON2)
                         {
+
                             placerCoups(joueur, p.getPosTabY(), p.getPosTabX(), aff);
                             joueur = (joueur == Color.BLACK) ? Color.WHITE: Color.BLACK;
                             int nbChoix = choixPossible(joueur);
                             if(ia == joueur)
                             {
-                                jouerIA();
+                                jouerIA(ia);
                                 joueur = (joueur == Color.BLACK) ? Color.WHITE: Color.BLACK;
                                 nbChoix = choixPossible(joueur);
                             }
@@ -103,7 +115,7 @@ public class Othello
                                 choixPossible(joueur);
                                 while(ia == joueur)
                                 {
-                                    jouerIA();
+                                    jouerIA(ia);
                                     joueur = (joueur == Color.BLACK) ? Color.WHITE: Color.BLACK;
                                     nbChoix = choixPossible(joueur);
                                     if(nbChoix == 0) {
@@ -222,9 +234,10 @@ public class Othello
             case 1: // Haut
                 i = ligne;
                 while(i >=0) {
-                    if(getPlace(i, col).getPion() == null)
+                    Place p =getPlace(i, col);
+                    if(p.getPion() == null)
                         return false;
-                    if (getPlace(i, col) != null && getPlace(i, col).getPion() != null && getPlace(i, col).getPion().getColor() == joueur)
+                    if (p != null && p.getPion() != null && p.getPion().getColor() == joueur)
                         return true;
                     i--;
                 }
@@ -232,9 +245,10 @@ public class Othello
             case 2: // Bas
                 i = ligne;
                 while(i < 8) {
-                    if(getPlace(i, col).getPion() == null)
+                    Place p =getPlace(i, col);
+                    if(p.getPion() == null)
                         return false;
-                    if (getPlace(i, col) != null && getPlace(i, col).getPion() != null && getPlace(i, col).getPion().getColor() == joueur)
+                    if (p != null && p.getPion() != null && p.getPion().getColor() == joueur)
                         return true;
                     i++;
                 }
@@ -242,9 +256,10 @@ public class Othello
             case 3: // Droite
                 i = col;
                 while(i < 8) {
-                    if(getPlace(ligne, i).getPion() == null)
+                    Place p = getPlace(ligne, i);
+                    if(p.getPion() == null)
                         return false;
-                    if (getPlace(ligne, i)!= null && getPlace(ligne, i).getPion() != null && getPlace(ligne, i).getPion().getColor() == joueur)
+                    if (p!= null && p.getPion() != null && p.getPion().getColor() == joueur)
                         return true;
                     i++;
                 }
@@ -252,9 +267,10 @@ public class Othello
             case 4: // Gauche
                 i = col;
                 while(i >= 0) {
-                    if(getPlace(ligne, i).getPion() == null)
+                    Place p = getPlace(ligne, i);
+                    if(p.getPion() == null)
                         return false;
-                    if (getPlace(ligne, i)!= null && getPlace(ligne, i).getPion() != null && getPlace(ligne, i).getPion().getColor() == joueur)
+                    if (p!= null && p.getPion() != null && p.getPion().getColor() == joueur)
                         return true;
                     i--;
                 }
@@ -262,9 +278,10 @@ public class Othello
             case 5: // Haut Droite
                 i = 1;
                 while(ligne - i >=0 && col + i < 8) {
-                    if(getPlace(ligne-i, col+i).getPion() == null)
+                    Place p = getPlace(ligne-i, col+i);
+                    if(p.getPion() == null)
                         return false;
-                    if (getPlace(ligne-i, col+i)!=null &&getPlace(ligne-i, col+i).getPion() != null && getPlace(ligne-i, col+i).getPion().getColor() == joueur)
+                    if (p!=null &&p.getPion() != null && p.getPion().getColor() == joueur)
                         return true;
                     i++;
                 }
@@ -272,9 +289,10 @@ public class Othello
             case 6: // Haut Gauche
                 i = 1;
                 while(ligne - i >=0 && col - i >= 0) {
-                    if(getPlace(ligne-i, col-i).getPion() == null)
+                    Place p = getPlace(ligne-i, col-i);
+                    if(p.getPion() == null)
                         return false;
-                    if (getPlace(ligne-i, col-i)!=null &&getPlace(ligne-i, col-i).getPion() != null && getPlace(ligne-i, col-i).getPion().getColor() == joueur)
+                    if (p!=null &&p.getPion() != null && p.getPion().getColor() == joueur)
                         return true;
                     i++;
                 }
@@ -282,9 +300,10 @@ public class Othello
             case 7: // Bas Droite
                 i = 1;
                 while(ligne + i < 8 && col + i < 8) {
-                    if(getPlace(ligne+i, col+i).getPion() == null)
+                    Place p = getPlace(ligne+i, col+i);
+                    if(p.getPion() == null)
                         return false;
-                    if (getPlace(ligne+i, col+i)!= null && getPlace(ligne+i, col+i).getPion() != null && getPlace(ligne+i, col+i).getPion().getColor() == joueur)
+                    if (p!= null && p.getPion() != null && p.getPion().getColor() == joueur)
                         return true;
                     i++;
                 }
@@ -292,9 +311,10 @@ public class Othello
             case 8: // Bas Gauche
                 i = 1;
                 while(ligne + i < 8 && col - i >= 0) {
-                    if(getPlace(ligne+i, col-i).getPion() == null)
+                    Place p = getPlace(ligne+i, col-i);
+                    if(p.getPion() == null)
                         return false;
-                    if (getPlace(ligne+i, col-i)!=null &&getPlace(ligne+i, col-i).getPion() != null && getPlace(ligne+i, col-i).getPion().getColor() == joueur)
+                    if (p!=null &&p.getPion() != null && p.getPion().getColor() == joueur)
                         return true;
                     i++;
                 }
@@ -305,87 +325,217 @@ public class Othello
         return false;
     }
 
-    public void jouerIA()
+
+    public void jouerIA(Color ia)
     {
-        Random rand = new Random();
-        int nb = rand.nextInt(caseJouables.size());
-        placerCoups(ia, caseJouables.get(nb).getPosTabY(), caseJouables.get(nb).getPosTabX(), aff);
+        Coup coup = new Coup();
+        int p = 6;
+        //this.creerGraphe(1, p, this, coup, 2);
+        Resultat r = minimax(7,true, this, coup,-5000, 5000, 1);
+        placerCoups(ia, r.getCoup().getX(), r.getCoup().getY(), aff);
     }
-
-    public DefaultDirectedGraph<Coup, DefaultEdge> creerGraphePositionel(){
-        Othello o = new Othello();
-        Othello temp = new Othello();
-        List<Coup> coup = new ArrayList<>();
-        Coup sommet = new Coup();
-        DefaultDirectedGraph<Coup, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
-        graph.addVertex(sommet);
-        for(Coup c: coupJoue)
+    public int creerGrapheJGraph(int profondeurActuel, int profondeurMax, Othello toClone, Coup sommet,DefaultDirectedGraph<Coup, DefaultEdge> graph, int choixStrategie)
+    {
+        if(profondeurActuel < profondeurMax)
         {
-            o.placerCoups(c.getJoueur(), c.getX(), c.getY(), o.getAff());
-            o.setJoueur((o.getJoueur() ==  Color.WHITE)? Color.BLACK: Color.WHITE);
-            o.choixPossible(o.getJoueur());
+            Othello clone = toClone.clone();
+            Othello temp = toClone.clone();
+            int min_max = (profondeurActuel % 2 == 0)?5000 : -5000;
 
-            temp.placerCoups(c.getJoueur(), c.getX(), c.getY(), temp.getAff());
-            temp.setJoueur((temp.getJoueur() ==  Color.WHITE)? Color.BLACK: Color.WHITE);
-            temp.choixPossible(temp.getJoueur());
-        }
-        
-        for(Place p: o.getCaseJouables())
-        {
-            temp.placerCoups(temp.getJoueur(), p.getPosTabY(), p.getPosTabX(), temp.getAff());
-            temp.choixPossible((temp.getJoueur()== Color.WHITE)?Color.BLACK:Color.WHITE);
-            Coup co = temp.getCoupJoue().get(temp.getCoupJoue().size()-1);
-            coup.add(co);
-            graph.addVertex(co);
-            graph.addEdge(sommet, co);
-
-            Othello clone2 = new Othello();//On clone temp pour faire les coups parmis un coup
-            for(Coup c:temp.getCoupJoue())
+            List<Integer> score = new ArrayList<>();
+            for(Place p: temp.getCaseJouables())
             {
-                clone2.placerCoups(c.getJoueur(), c.getX(), c.getY(), clone2.getAff());
-                clone2.setJoueur((clone2.getJoueur() ==  Color.WHITE)? Color.BLACK: Color.WHITE);
-                clone2.choixPossible((c.getJoueur() == Color.WHITE)?Color.BLACK:Color.WHITE);
-            }
-
-            for(Place c:temp.getCaseJouables())//Pour chaque case jouable on place le coup dans le clone2
-            {
-                clone2.placerCoups(clone2.getJoueur(), c.getPosTabY(), c.getPosTabX(), clone2.getAff());
-                clone2.choixPossible((clone2.getJoueur() == Color.WHITE)?Color.BLACK:Color.WHITE);
-                Coup co2= clone2.getCoupJoue().get(clone2.getCoupJoue().size()-1);
-                graph.addVertex(co2);
-                graph.addEdge(co, co2);
-
-                clone2 =  new Othello();
-                for(Coup c2: temp.getCoupJoue())
+                Coup  coup = clone.placerCoups(clone.getJoueur(), p.getPosTabY(), p.getPosTabX(), clone.getAff());
+                clone.choixPossible((clone.getJoueur() == Color.WHITE)? Color.BLACK:Color.WHITE);
+                graph.addVertex(coup);
+                graph.addEdge(sommet, coup);
+                int temp1 = creerGraphe(profondeurActuel+1, profondeurMax, clone, coup, choixStrategie);
+                if(profondeurActuel == 1)
                 {
-                    clone2.placerCoups(c2.getJoueur(), c2.getX(), c2.getY(), clone2.getAff());
-                    clone2.choixPossible((c2.getJoueur() == Color.WHITE)?Color.BLACK:Color.WHITE);
+                    score.add(temp1);
+                }else
+                {
+                    if(profondeurActuel % 2 == 0)
+                    {
+                        min_max = Math.min(temp1, min_max);
+                    }else
+                    {
+                        min_max = Math.max(temp1, min_max);
+                    }
                 }
+                clone = toClone.clone();
             }
-
-            temp = new Othello();
-            for(Coup c:coupJoue)
+            if(profondeurActuel == 1)
             {
-                temp.placerCoups(c.getJoueur(), c.getX(), c.getY(), temp.getAff());
-                temp.choixPossible((c.getJoueur() == Color.WHITE)?Color.BLACK:Color.WHITE);
+                int max=-5000;
+                for(Integer e: score)
+                {
+                    max = Math.max(max, e);
+                }
+                int index  =score.indexOf(max);
+                sommet.setX(Graphs.successorListOf(graph,sommet).get(index).getX());
+                sommet.setY(Graphs.successorListOf(graph,sommet).get(index).getY());
+                sommet.setJoueur(Graphs.successorListOf(graph,sommet).get(index).getJoueur());
+                sommet.setPoids(Graphs.successorListOf(graph,sommet).get(index).getPoids());
             }
-
+            return min_max;
         }
-
-        for(Coup p: coup)
-            System.out.println(p.getPoids());
-        return graph;
+        else
+            return choixStrategie(choixStrategie, sommet);
     }
-
-    public void placerCoups(Color joueur, int x, int y, Group root)
+    public int creerGraphe(int profondeurActuel, int profondeurMax, Othello toClone, Coup sommet, int choixStrategie)
     {
 
-        if(caseJouables.contains(getPlace(y, x)))
+        if(profondeurActuel <= profondeurMax)
         {
-            getPlace(y, x).setFill(Color.GREEN);
-            getPlace(y, x).setPion(new Pion((int)getPlace(y, x).getX()+50, (int)getPlace(y, x).getY()+50, joueur));
-            Coup c = new Coup(x, y, joueur);
-            c.setPoids(getPlace(y, x).getPoids());
+            Othello clone = toClone.clone();
+            List<Place> caseJouable = toClone.getCaseJouables();
+            int min_max = (profondeurActuel % 2 == 0)?5000 : -5000;
+            Map<Integer, Coup> score = new HashMap<>();
+            for(Place p: caseJouable)
+            {
+                Coup  coup = clone.placerCoups(clone.getJoueur(), p.getPosTabY(), p.getPosTabX(), clone.getAff());
+                clone.choixPossible((clone.getJoueur() == Color.WHITE)? Color.BLACK:Color.WHITE);
+                int temp1 = creerGraphe(profondeurActuel+1, profondeurMax, clone, coup, choixStrategie);
+                if(profondeurActuel == 1)
+                {
+                   score.put(temp1, coup);
+                }else
+                {
+                    if(profondeurActuel % 2 == 0)
+                    {
+                        min_max = Math.min(temp1, min_max);
+                    }else
+                    {
+                        min_max = Math.max(temp1, min_max);
+                    }
+                }
+
+            }
+            if(profondeurActuel == 1)
+            {
+                int max=-5000;
+                for(Map.Entry<Integer, Coup> map:score.entrySet())
+                {
+                    if(map.getKey() >= max)
+                    {
+                        max = map.getKey();
+                    }
+                }
+
+                sommet.setX(score.get(max).getX());
+                sommet.setY(score.get(max).getY());
+                sommet.setJoueur(score.get(max).getJoueur());
+                sommet.setPoids(score.get(max).getPoids());
+            }
+            return min_max;
+        }
+        else
+            return choixStrategie(choixStrategie, sommet);
+    }
+
+    public boolean game_over(Othello game)
+    {
+        if(game.getCaseJouables().size() != 0)
+            return false;
+        else{
+            Othello clone = game.clone();
+            clone.setJoueur((clone.getJoueur() == Color.WHITE)? Color.BLACK:Color.WHITE);
+            return clone.choixPossible(clone.getJoueur()) == 0;
+        }
+    }
+
+    public Resultat minimax(int profondeur, boolean maximizePlayer, Othello toClone, Coup sommet, int alpha, int beta, int choixStrategie)
+    {
+
+        if(profondeur == 0|| game_over(toClone))
+        {
+            return new Resultat(choixStrategie(choixStrategie, sommet), sommet);
+        }
+        if(maximizePlayer)
+        {
+
+            List<Place> caseJouable = toClone.getCaseJouables();
+
+            Resultat resultat = new Resultat(-5000, null);
+            for(Place p: caseJouable)
+            {
+                Othello clone = toClone.clone();
+                Coup  coup = clone.placerCoups(clone.getJoueur(), p.getPosTabY(), p.getPosTabX(), clone.getAff());
+                clone.choixPossible((clone.getJoueur() == Color.WHITE)? Color.BLACK:Color.WHITE);
+                Resultat eval = minimax( profondeur-1 , false, clone, coup,alpha, beta, choixStrategie);
+                eval.setCoup(coup);
+                if(eval.getValeur() >= resultat.getValeur())
+                {
+                    resultat = eval;
+                }
+                alpha =  Math.max(alpha, eval.getValeur());
+                if(beta <= alpha)
+                    break;
+            }
+            return resultat;
+        }else
+        {
+            List<Place> caseJouable = toClone.getCaseJouables();
+
+            Resultat resultat = new Resultat(5000, null);
+            for(Place p: caseJouable)
+            {
+                Othello clone = toClone.clone();
+                Coup  coup = clone.placerCoups(clone.getJoueur(), p.getPosTabY(), p.getPosTabX(), clone.getAff());
+                clone.choixPossible((clone.getJoueur() == Color.WHITE)? Color.BLACK:Color.WHITE);
+                Resultat eval = minimax(profondeur-1, true, clone, coup, alpha, beta, choixStrategie);
+                eval.setCoup(coup);
+                if(eval.getValeur() <= resultat.getValeur())
+                {
+                    resultat = eval;
+                }
+                beta =  Math.min(beta, eval.getValeur());
+                if(beta <= alpha)
+                    break;
+            }
+            return resultat;
+        }
+    }
+
+    public int choixStrategie(int choix, Coup coup)// 1 pour absolu, 2 pour positionnel, 3 pour mobilité
+    {
+        int retour = -5000;
+        switch (choix){
+            case 1:
+                retour = coup.getNbPieces();
+                break;
+            case 2:
+                retour = coup.getPoids();
+                break;
+            case 3:
+                break;
+        }
+        return retour;
+    }
+
+    public boolean estUnChoixPossible(Place place)
+    {
+        for(Place p :caseJouables)
+        {
+            if(p.getPosTabY() == place.getPosTabY() && p.getPosTabX() == place.getPosTabX())
+                return true;
+        }
+        return false;
+    }
+
+
+    public Coup placerCoups(Color joueur, int x, int y, Group root)
+    {
+        Coup c = new Coup(x, y, joueur);
+        Place p = getPlace(y, x);
+        if(estUnChoixPossible(p))
+        {
+
+            p.setFill(Color.GREEN);
+            p.setPion(new Pion((int)p.getX()+50, (int)p.getY()+50, joueur));
+
+            c.setPoids(p.getPoids());
             coupJoue.add(c);
 
 
@@ -421,12 +571,19 @@ public class Othello
                 }
             }
         }
-        for(Place p: caseJouables){
-            p.setFill(p.getColor());
+        for(Place p2: caseJouables){
+            p2.setFill(p2.getColor());
 
         }
+        int nb = 0;
         caseJouables.clear();
-
+        for(Place o :plateau)
+        {
+            if(o.getPion() != null && o.getPion().getColor() == joueur)
+                nb++;
+        }
+        c.setNbPieces(nb);
+        return c;
     }
     public void resetPartie()
     {
@@ -438,6 +595,28 @@ public class Othello
         creerPlateau();
         choixPossible(joueur);
         draw(aff);
+    }
+
+    public Color quiGagne()
+    {
+        int nbWhite = 0;
+        int nbBlack = 0;
+        for(Place p: plateau)
+        {
+            if(p.getPion()!= null)
+            {
+                if(p.getPion().getColor() ==  Color.WHITE)
+                    nbWhite++;
+                else
+                    nbBlack++;
+            }
+        }
+        if(nbWhite > nbBlack)
+            return Color.WHITE;
+        else if (nbBlack > nbWhite)
+            return Color.BLACK;
+        else
+            return null;
     }
 
     public Group getAff() {
@@ -482,12 +661,29 @@ public class Othello
         this.joueur = joueur;
     }
 
-    public List<Coup> getCoupJoue() {
+    public LinkedList<Coup> getCoupJoue() {
         return coupJoue;
     }
 
-    public void setCoupJoue(List<Coup> coupJoue) {
+    public void setCoupJoue(LinkedList<Coup> coupJoue) {
         this.coupJoue = coupJoue;
+    }
+
+    @Override
+    public Othello clone()
+    {
+        Othello clone = new Othello("test");
+        clone.getCaseJouables().clear();
+        for(Place p: this.plateau)
+        {
+            clone.getPlateau().add(p.clone());
+        }
+        for(Place p: this.caseJouables)
+        {
+            clone.getCaseJouables().add(new Place(p.getPosTabX(), p.getPosTabY(),p.getColor()));
+        }
+        clone.setJoueur(this.getJoueur());
+        return clone;
     }
 }
 

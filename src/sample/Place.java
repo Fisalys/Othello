@@ -71,4 +71,16 @@ public class Place extends Rectangle
     public void setPoids(int poids) {
         this.poids = poids;
     }
+    public Place clone()
+    {
+        Place clone = new Place();
+        clone.setX(this.getX());
+        clone.setY(this.getY());
+        clone.setPosTabX(this.getPosTabX());
+        clone.setPosTabY(this.getPosTabY());
+        clone.setColor(this.getColor());
+        if(this.pion != null)
+            clone.setPion(new Pion((int)this.pion.getCenterX(), (int)this.pion.getCenterY(), this.pion.getColor()));
+        return clone;
+    }
 }
