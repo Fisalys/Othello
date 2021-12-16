@@ -154,7 +154,6 @@ public class Othello
         for(Place p: plateau)
             if(p.getPosTabX()==x && p.getPosTabY() == y)
                 result = p;
-
         return result;
     }
 
@@ -329,9 +328,8 @@ public class Othello
     public void jouerIA(Color ia)
     {
         Coup coup = new Coup();
-        int p = 6;
         //this.creerGraphe(1, p, this, coup, 2);
-        Resultat r = minimax(7,true, this, coup,-5000, 5000, 1);
+        Resultat r = minimax(3,true, this, coup,-5000, 5000, 1, ia);
         placerCoups(ia, r.getCoup().getX(), r.getCoup().getY(), aff);
     }
     public int creerGrapheJGraph(int profondeurActuel, int profondeurMax, Othello toClone, Coup sommet,DefaultDirectedGraph<Coup, DefaultEdge> graph, int choixStrategie)
@@ -445,54 +443,58 @@ public class Othello
         }
     }
 
-    public Resultat minimax(int profondeur, boolean maximizePlayer, Othello toClone, Coup sommet, int alpha, int beta, int choixStrategie)
+    public Resultat minimax(int profondeur, boolean maximizePlayer, Othello toClone, Coup sommet, int alpha, int beta, int choixStrategie, Color ia)
     {
-
-        if(profondeur == 0|| game_over(toClone))
-        {
-            return new Resultat(choixStrategie(choixStrategie, sommet), sommet);
+        if(profondeur == 0|| game_over(toClone)) {
+            if(game_over(toClone)) {
+               if(toClone.quiGagne() == ia) {
+                   return new Resultat(5000, sommet);//Permet d'indiquer si le coups donne la victoire ou non
+               }
+            }
+            else {
+                if(choixStrategie == 3) return new Resultat(toClone.getCaseJouables().size(), sommet);
+                else return new Resultat(choixStrategie(choixStrategie, sommet), sommet);
+            }
         }
-        if(maximizePlayer)
-        {
-
+        if(maximizePlayer) {
             List<Place> caseJouable = toClone.getCaseJouables();
-
             Resultat resultat = new Resultat(-5000, null);
-            for(Place p: caseJouable)
-            {
+            for(Place p: caseJouable) {
                 Othello clone = toClone.clone();
                 Coup  coup = clone.placerCoups(clone.getJoueur(), p.getPosTabY(), p.getPosTabX(), clone.getAff());
                 clone.choixPossible((clone.getJoueur() == Color.WHITE)? Color.BLACK:Color.WHITE);
-                Resultat eval = minimax( profondeur-1 , false, clone, coup,alpha, beta, choixStrategie);
+                Resultat eval = minimax( profondeur-1 , false, clone, coup,alpha, beta, choixStrategie, ia);
+
                 eval.setCoup(coup);
-                if(eval.getValeur() >= resultat.getValeur())
-                {
+                if(eval.getValeur() >= resultat.getValeur()) {
                     resultat = eval;
                 }
+                /*
                 alpha =  Math.max(alpha, eval.getValeur());
                 if(beta <= alpha)
                     break;
+
+                 */
             }
             return resultat;
-        }else
-        {
+        }else {
             List<Place> caseJouable = toClone.getCaseJouables();
-
             Resultat resultat = new Resultat(5000, null);
-            for(Place p: caseJouable)
-            {
+            for(Place p: caseJouable) {
                 Othello clone = toClone.clone();
                 Coup  coup = clone.placerCoups(clone.getJoueur(), p.getPosTabY(), p.getPosTabX(), clone.getAff());
                 clone.choixPossible((clone.getJoueur() == Color.WHITE)? Color.BLACK:Color.WHITE);
-                Resultat eval = minimax(profondeur-1, true, clone, coup, alpha, beta, choixStrategie);
+                Resultat eval = minimax(profondeur-1, true, clone, coup, alpha, beta, choixStrategie, ia);
                 eval.setCoup(coup);
-                if(eval.getValeur() <= resultat.getValeur())
-                {
+                if(eval.getValeur() <= resultat.getValeur()) {
                     resultat = eval;
                 }
+                /*
                 beta =  Math.min(beta, eval.getValeur());
                 if(beta <= alpha)
                     break;
+
+                 */
             }
             return resultat;
         }
@@ -500,18 +502,11 @@ public class Othello
 
     public int choixStrategie(int choix, Coup coup)// 1 pour absolu, 2 pour positionnel, 3 pour mobilité
     {
-        int retour = -5000;
-        switch (choix){
-            case 1:
-                retour = coup.getNbPieces();
-                break;
-            case 2:
-                retour = coup.getPoids();
-                break;
-            case 3:
-                break;
-        }
-        return retour;
+        return switch (choix) {
+            case 1 -> coup.getNbPieces();
+            case 2 -> coup.getPoids();
+            default -> -5000;
+        };
     }
 
     public boolean estUnChoixPossible(Place place)

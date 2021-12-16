@@ -301,6 +301,12 @@ public class Main extends Application {
     public void jouerPlusieursPartie(int choixStrategie)//1 pour absolu, 2 pour positionnel, 3 pour mobilité
     {
         long debut = System.currentTimeMillis();
+        if(choixStrategie == 1)
+            System.out.println("Strategy = Absolu");
+        if(choixStrategie == 2)
+            System.out.println("Strategy = Positionnel");
+        if(choixStrategie == 3)
+            System.out.println("Strategy = Mobilité");
         int victoireBlanche = 0;
         int victoireNoire = 0;
         int egalite = 0;
@@ -335,7 +341,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-            jouerPlusieursPartie(1);
+            jouerPlusieursPartie(2);
     }
 
 
